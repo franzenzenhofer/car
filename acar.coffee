@@ -11,7 +11,12 @@ _w_ = 0
 _h_ = 0
 _level_ = {}
 _sprite_collector_ = {}
-_speed_ = 30
+_speed_ = _default_speed_ = 30
+_game_debug_ = false
+
+gd = () -> 
+  if _game_debug_ is true then return true
+  return false 
 
 
 d = (m) -> console.log(m) if _DEBUG_
@@ -116,7 +121,7 @@ drawCar = (cb) ->
   window.document.body.appendChild(blueprint_canvas)
   window.document.body.appendChild(draw_canvas)
   button = document.createElement('button')
-  button.innerHTML = 'Done'
+  button.innerHTML = 'Draw a car and two wheels and then click this button!'
   button.setAttribute('style', 'position: absolute; top: 5; left: 10;z-index: +3;')
   window.document.body.appendChild(button)
   
@@ -187,12 +192,14 @@ create = () ->
   _graphics_ = _game_.add.graphics(0,0)
   _game_.world.setBounds(0, 0, _w_*1000, _h_)
   _game_.physics.startSystem(Phaser.Physics.P2JS)
-  _game_.physics.p2.gravity.y = 250
+  _game_.physics.p2.gravity.y = 300
   _game_.physics.p2.restitution = 0.4
   _game_.stage.backgroundColor = '#ffffff'
   _game_.physics.p2.friction = 5
 
   _nav_ = _game_.input.keyboard.createCursorKeys()
+  _nav_.d = _game_.input.keyboard.addKey(Phaser.Keyboard.D)
+  _nav_.t = _game_.input.keyboard.addKey(Phaser.Keyboard.T)
 
   _car_ = makeCar(_game_, _nav_)
   _level_ = makeLevel(_game_, _nav_, _car_)
@@ -225,6 +232,18 @@ update = () ->
     _car_.main.body.angle = _car_.main.body.angle + 1
     _car_.main.body.angularVelocity = 0.0001
 
+  if _nav_.d.isDown
+    d('game debug')
+    _game_debug_ = !gd()
+    _car_.main.body.debug = gd()
+    _car_.front_wheel.body.debug = gd()
+    _car_.back_wheel.body.debug = gd()
+
+  if _nav_.t.isDown
+    _speed_ = _default_speed_ * 2.8
+  else
+    _speed_ = _default_speed_
+
 makeCar = (g,n) ->
   car_main  = g.add.sprite(100, 100, 'car-body')
   front_wheel = g.add.sprite(140, 130, 'front-wheel')
@@ -236,17 +255,17 @@ makeCar = (g,n) ->
 
 
   car_main.body.setRectangle(105,75);
-  car_main.body.debug = false;
+  car_main.body.debug = gd()
   car_main.body.mass = 1;
   car_main.body.setCollisionGroup(cg_car);
 
   front_wheel.body.setCircle(20);
-  front_wheel.body.debug = false;
+  front_wheel.body.debug = gd()
   front_wheel.body.mass = 1;
   front_wheel.body.setCollisionGroup(cg_car);
 
   back_wheel.body.setCircle(20);
-  back_wheel.body.debug = false;
+  back_wheel.body.debug = gd()
   back_wheel.body.mass = 1;
   back_wheel.body.setCollisionGroup(cg_car);
 
@@ -275,8 +294,8 @@ makeCar = (g,n) ->
 makeLevel = (g,n,c) ->
   ground = g.add.group()
   jumps = []
-  for i in [0 ... 40]
-    jumps.push(addJump(ground, (600*(i+1))+rand(0,800), _h_, rand(100,800), rand(10,400), g, n, c))
+  for i in [0 ... 29]
+    jumps.push(addJump(ground, (600*(i+1))+rand(0,800), _h_, rand(50,_w_*0.5), rand(10,_h_*0.6), g, n, c))
 
   return {
     ground: ground
@@ -302,7 +321,7 @@ addJump = (ground, x = 500, y = _h_, width=700, height = 50, g = _game_, n = _na
   g.physics.p2.enable(jump, true, true)
   
   jump.body.mass = 10
-  jump.body.debug = false
+  jump.body.debug = gd()
   jump.body.addPolygon({}, jump_polygon)
   jump.body.kinematic = true
   jump.body.setCollisionGroup(cg_level)
@@ -318,7 +337,10 @@ addJump = (ground, x = 500, y = _h_, width=700, height = 50, g = _game_, n = _na
   return jump
 
 render = () -> 
-  #_game_.debug.cameraInfo(_game_.camera, 32, 32);
-  #game.debug.spriteCoords(player, 32, 500);
+  #
+  if gd()
+    _game_.debug.cameraInfo(_game_.camera, 32, 32, '#000000');
+  else
+    _game_.debug.cameraInfo(_game_.camera, -300, -300, '#000000');
 
 window.document.onload = init()
