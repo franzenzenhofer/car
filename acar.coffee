@@ -4,12 +4,14 @@ _DEBUG_ = true
 #globals
 _game_ = {}
 _nav_ = {}
+_graphics_ = {}
 
 _car_ = {}
 _w_ = 0
 _h_ = 0
 _level_ = {}
 _sprite_collector_ = {}
+_speed_ = 30
 
 
 d = (m) -> console.log(m) if _DEBUG_
@@ -121,6 +123,7 @@ drawCar = (cb) ->
   button.addEventListener('click', () -> 
     draw_canvas.setAttribute('style','display:none;')
     blueprint_canvas.setAttribute('style','display:none;')
+    button.setAttribute('style','display:none;')
     cutAndSet = (resize_factor, pos_array, set_target) ->
       [x,y,w,h] = pos_array
       c2 = document.createElement('canvas')
@@ -181,6 +184,7 @@ preload = () ->
 
 create = () ->
   d('create')
+  _graphics_ = _game_.add.graphics(0,0)
   _game_.world.setBounds(0, 0, _w_*1000, _h_)
   _game_.physics.startSystem(Phaser.Physics.P2JS)
   _game_.physics.p2.gravity.y = 250
@@ -203,17 +207,22 @@ update = () ->
 
   if _nav_.right.isDown
     d('->')
-    _car_.back_wheel.body.angularVelocity = +40
-    _car_.front_wheel.body.angularVelocity = +40
+    _car_.back_wheel.body.angularVelocity = _speed_
+    _car_.front_wheel.body.angularVelocity = _speed_
   
   if _nav_.left.isDown
     d('<-')
-    _car_.back_wheel.body.angularVelocity = -40
-    _car_.front_wheel.body.angularVelocity = -40
+    _car_.back_wheel.body.angularVelocity = _speed_ * -1
+    _car_.front_wheel.body.angularVelocity = _speed_ * -1
 
   if _nav_.up.isDown
     d('^')
     _car_.main.body.angle = _car_.main.body.angle - 1
+    _car_.main.body.angularVelocity = 0.0001
+
+  if _nav_.down.isDown
+    d('v')
+    _car_.main.body.angle = _car_.main.body.angle + 1
     _car_.main.body.angularVelocity = 0.0001
 
 makeCar = (g,n) ->
@@ -267,7 +276,7 @@ makeLevel = (g,n,c) ->
   ground = g.add.group()
   jumps = []
   for i in [0 ... 40]
-    jumps.push(addJump(ground, (600*(i+1))+rand(0,800), _h_, rand(100,800), rand(10,200), g, n, c))
+    jumps.push(addJump(ground, (600*(i+1))+rand(0,800), _h_, rand(100,800), rand(10,400), g, n, c))
 
   return {
     ground: ground
@@ -277,7 +286,15 @@ makeLevel = (g,n,c) ->
 _jump_counter_ = 0
 addJump = (ground, x = 500, y = _h_, width=700, height = 50, g = _game_, n = _nav_, c = _car_, counter = _jump_counter_++) ->
 
+  _graphics_.beginFill(0xffffff);
+  _graphics_.lineStyle(5, 0x000000, 1)
+
   jump_polygon = [[x,y], [x+width, y-height], [x+(width*2), y]]
+  _graphics_.moveTo(x,y)
+  _graphics_.lineTo(x+width, y-height)
+  _graphics_.lineTo(x+(width*2), y)
+  _graphics_.endFill()
+
   cg_level = g.physics.p2.createCollisionGroup()
   g.physics.p2.updateBoundsCollisionGroup()
   jump = ground.create(0,0)
@@ -285,7 +302,7 @@ addJump = (ground, x = 500, y = _h_, width=700, height = 50, g = _game_, n = _na
   g.physics.p2.enable(jump, true, true)
   
   jump.body.mass = 10
-  jump.body.debug = true
+  jump.body.debug = false
   jump.body.addPolygon({}, jump_polygon)
   jump.body.kinematic = true
   jump.body.setCollisionGroup(cg_level)
