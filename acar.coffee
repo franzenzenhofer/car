@@ -197,9 +197,6 @@ create = () ->
   _game_.stage.backgroundColor = '#ffffff'
   _game_.physics.p2.friction = 5
 
-  text = "←/→ = left/right | ↑/↓ = wheelie/anit-wheelie | t = turob ";
-  style = { font: "65px Arial", fill: "#000000", align: "center" };
-  t = _game_.add.text(game.world.centerX-300, 0, text, style);
 
   _nav_ = _game_.input.keyboard.createCursorKeys()
   _nav_.d = _game_.input.keyboard.addKey(Phaser.Keyboard.D)
@@ -296,6 +293,11 @@ makeCar = (g,n) ->
   }
 
 makeLevel = (g,n,c) ->
+  text = "←/→ = left/right \n ↑/↓ = wheelie/anti-wheelie \n t = turbo "
+  style = { font: "28px Courier", fill: "#000000", align: "center" }
+  t = _game_.add.text(80, 80, text, style)
+  alert(text)
+
   ground = g.add.group()
   jumps = []
   for i in [0 ... 29]
