@@ -296,7 +296,6 @@
       align: "center"
     };
     t = _game_.add.text(80, 80, text, style);
-    alert(text);
     ground = g.add.group();
     jumps = [];
     for (i = _i = 0; _i < 29; i = ++_i) {

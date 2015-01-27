@@ -296,7 +296,7 @@ makeLevel = (g,n,c) ->
   text = "←/→ = left/right \n ↑/↓ = wheelie/anti-wheelie \n t = turbo "
   style = { font: "28px Courier", fill: "#000000", align: "center" }
   t = _game_.add.text(80, 80, text, style)
-  alert(text)
+  #alert(text)
 
   ground = g.add.group()
   jumps = []
